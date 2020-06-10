@@ -1,5 +1,7 @@
-class BlobInfoV1 {
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+class BlobInfoV1 extends IIdentifiable<String> {
   /* Identification */
+  @override
   String id;
   String group;
   String name;
@@ -18,7 +20,7 @@ class BlobInfoV1 {
     this.name = name;
     this.size = size;
     this.content_type = content_type;
-    create_time = DateTime.now();
+    create_time = DateTime.now().toUtc();
     this.expire_time = expire_time;
     completed = false;
   }
