@@ -83,12 +83,12 @@
 //         };
 //     }
 
-//     public getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams,
+//     public getPageByFilter(String correlationId, filter: FilterParams, paging: PagingParams,
 //         callback: (err: any, page: DataPage<BlobInfoV1>) => void): void {
 //         super.getPageByFilter(correlationId, this.composeFilter(filter), paging, null, null, callback);
 //     }
 
-//     public markCompleted(correlationId: string, ids: string[],
+//     public markCompleted(String correlationId, ids: string[],
 //         callback: (err: any) => void): void {
 //         async.each(ids, (id, callback) => {
 //             let data = AnyValueMap.fromTuples(
@@ -98,13 +98,13 @@
 //         }, callback);
 //     }
 
-//     public deleteById(correlationId: string, id: string,
+//     public deleteById(String correlationId, id: string,
 //         callback?: (err: any, item: BlobInfoV1) => void): void {
 //         delete this._content[id];
 //         super.deleteById(correlationId, id, callback);
 //     }
 
-//     public deleteByIds(correlationId: string, ids: string[],
+//     public deleteByIds(String correlationId, ids: string[],
 //         callback?: (err: any) => void): void {
 //         _.each(ids, (id) => {
 //             delete this._content[id];
@@ -112,7 +112,7 @@
 //         super.deleteByIds(correlationId, ids, callback);
 //     }
 
-//     public clear(correlationId: string, callback?: (err: any) => void): void {
+//     public clear(String correlationId, callback?: (err: any) => void): void {
 //         this._content = {};
 //         super.clear(correlationId, callback);
 //     }
@@ -122,12 +122,12 @@
 //         return false;
 //     }
 
-//     public getUri(correlationId: string, id: string,
+//     public getUri(String correlationId, id: string,
 //         callback: (err: any, uri: string) => void): void {
 //         callback(null, null);
 //     }
 
-//     public beginWrite(correlationId: string, item: BlobInfoV1,
+//     public beginWrite(String correlationId, item: BlobInfoV1,
 //         callback: (err: any, token: string) => void): void {
         
 //         if (item.size != null && item.size > this._maxBlobSize) {
@@ -149,7 +149,7 @@
 //         });
 //     }
 
-//     public writeChunk(correlationId: string, token: string, chunk: string,
+//     public writeChunk(String correlationId, token: string, chunk: string,
 //         callback: (err: any, token: string) => void): void {
         
 //         let id = token;
@@ -186,7 +186,7 @@
 //         callback(null, token);
 //     }
 
-//     public endWrite(correlationId: string, token: string, chunk: string,
+//     public endWrite(String correlationId, token: string, chunk: string,
 //         callback?: (err: any, item: BlobInfoV1) => void): void {
 
 //         let id = token;
@@ -225,13 +225,13 @@
 //         });
 //     }
 
-//     public abortWrite(correlationId: string, token: string,
+//     public abortWrite(String correlationId, token: string,
 //         callback?: (err: any) => void): void {
 //         let id = token;
 //         this.deleteById(correlationId, id, callback);
 //     }
 
-//     public beginRead(correlationId: string, id: string,
+//     public beginRead(String correlationId, id: string,
 //         callback: (err: any, item: BlobInfoV1) => void): void {
 //         let oldBuffer = this._content[id];
 //         if (oldBuffer == null) {
@@ -247,7 +247,7 @@
 //         super.getOneById(correlationId, id, callback);
 //     }
 
-//     public readChunk(correlationId: string, id: string,  
+//     public readChunk(String correlationId, id: string,  
 //         skip: number, take: number,
 //         callback: (err: any, chunk: string) => void): void {
 
@@ -266,7 +266,7 @@
 //         callback(null, result);
 //     }
 
-//     public endRead(correlationId: string, id: string,
+//     public endRead(String correlationId, id: string,
 //         callback?: (err: any) => void): void {
 //         if (callback) callback(null);
 //     }

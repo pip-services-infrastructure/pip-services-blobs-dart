@@ -1,45 +1,26 @@
-// import { DataPage } from 'package:pip_services3_commons-node';
-// import { FilterParams } from 'package:pip_services3_commons-node';
-// import { PagingParams } from 'package:pip_services3_commons-node';
+import 'dart:async';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import '../data/version1/BlobInfoV1.dart';
 
-// import { BlobInfoV1 } from '../data/version1/BlobInfoV1';
-
-// export interface IBlobsController {
-//     getBlobsByFilter(correlationId: string, filter: FilterParams, paging: PagingParams,
-//         callback: (err: any, page: DataPage<BlobInfoV1>) => void): void;
-//     getBlobsByIds(correlationId: string, blobIds: string[],
-//         callback: (err: any, blobs: BlobInfoV1[]) => void): void;
-//     getBlobById(correlationId: string, blobId: string,
-//         callback: (err: any, blob: BlobInfoV1) => void): void;
-
-//     getBlobUriById(correlationId: string, blobId: string,
-//         callback: (err: any, uri: string) => void): void;
-
-//     beginBlobWrite(correlationId: string, blob: BlobInfoV1,
-//         callback: (err: any, token: string) => void): void;
-//     writeBlobChunk(correlationId: string, token: string, chunk: string,
-//         callback: (err: any, token: string) => void): void;
-//     endBlobWrite(correlationId: string, token: string, chunk: string,
-//         callback?: (err: any, blob: BlobInfoV1) => void): void;
-//     abortBlobWrite(correlationId: string, token: string,
-//         callback?: (err: any) => void): void;
-    
-//     beginBlobRead(correlationId: string, blobId: string,
-//         callback: (err: any, blob: BlobInfoV1) => void): void;
-//     readBlobChunk(correlationId: string, blobId: string, skip: number, take: number,
-//         callback: (err: any, chunk: string) => void): void;
-//     endBlobRead(correlationId: string, blobId: string, 
-//         callback?: (err: any) => void): void;
-
-//     updateBlobInfo(correlationId: string, blob: BlobInfoV1,
-//         callback: (err: any, item: BlobInfoV1) => void): void;
-
-//     markBlobsCompleted(correlationId: string, blobIds: string[],
-//         callback: (err: any) => void): void;
-
-//     deleteBlobById(correlationId: string, blobId: string,
-//         callback?: (err: any) => void): void;
-
-//     deleteBlobsByIds(correlationId: string, blobIds: string[],
-//         callback?: (err: any) => void): void;
-// }
+abstract class IBlobsController {
+  Future<DataPage<BlobInfoV1>> getBlobsByFilter(
+      String correlationId, FilterParams filter, PagingParams paging);
+  Future<List<BlobInfoV1>> getBlobsByIds(
+      String correlationId, List<String> blobIds);
+  Future<BlobInfoV1> getBlobById(String correlationId, String blobId);
+  Future<String> getBlobUriById(String correlationId, String blobId); // uri
+  Future<String> beginBlobWrite(String correlationId, BlobInfoV1 blob); // token
+  Future<String> writeBlobChunk(
+      String correlationId, String token, String chunk); // token
+  Future<BlobInfoV1> endBlobWrite(
+      String correlationId, String token, String chunk);
+  Future abortBlobWrite(String correlationId, String token);
+  Future<BlobInfoV1> beginBlobRead(String correlationId, String blobId);
+  Future<String> readBlobChunk(
+      String correlationId, String blobId, int skip, int take);
+  Future endBlobRead(String correlationId, String blobId);
+  Future<BlobInfoV1> updateBlobInfo(String correlationId, BlobInfoV1 blob);
+  Future markBlobsCompleted(String correlationId, List<String> blobIds);
+  Future deleteBlobById(String correlationId, String blobId);
+  Future deleteBlobsByIds(String correlationId, List<String> blobIds);
+}

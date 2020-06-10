@@ -91,7 +91,7 @@
 //         return this._opened;
 //     }
 
-//     public open(correlationId: string, callback: (err?: any) => void): void {
+//     public open(String correlationId, callback: (err?: any) => void): void {
 //         if (this.isOpen()) {
 //             if (callback) callback();
 //             return;
@@ -131,7 +131,7 @@
 //         ], callback);
 //     }
 
-//     public close(correlationId: string, callback?: (err?: any) => void): void {
+//     public close(String correlationId, callback?: (err?: any) => void): void {
 //         // Close temp blob storage
 //         this._storage.close(correlationId, (err) => {
 //             this._opened = false;
@@ -218,7 +218,7 @@
 //         };
 //     }
 
-//     public getPageByFilter(correlationId: string, filter: FilterParams, paging: PagingParams,
+//     public getPageByFilter(String correlationId, filter: FilterParams, paging: PagingParams,
 //         callback: (err: any, page: DataPage<BlobInfoV1>) => void): void {
 
 //         let filterCurl = this.composeFilter(filter);
@@ -303,7 +303,7 @@
 //         )
 //     }
 
-//     public getListByIds(correlationId: string, ids: string[],
+//     public getListByIds(String correlationId, ids: string[],
 //         callback: (err: any, items: BlobInfoV1[]) => void): void {
 //         let items: BlobInfoV1[] = [];
 //         async.each(
@@ -320,7 +320,7 @@
 //         );
 //     }
 
-//     public getOneById(correlationId: string, id: string,
+//     public getOneById(String correlationId, id: string,
 //         callback: (err: any, item: BlobInfoV1) => void): void {
 
 //         let params = {
@@ -341,7 +341,7 @@
 //         );    
 //     }
 
-//     public update(correlationId: string, item: BlobInfoV1,
+//     public update(String correlationId, item: BlobInfoV1,
 //         callback: (err: any, item: BlobInfoV1) => void): void {
 
 //         item.group = this.encodeString(item.group);
@@ -373,7 +373,7 @@
 //         );
 //     }
 
-//     public markCompleted(correlationId: string, ids: string[],
+//     public markCompleted(String correlationId, ids: string[],
 //         callback: (err: any) => void): void {
 //         async.each(ids, (id, callback) => {
 //             this.getOneById(correlationId, id, (err, item) => {
@@ -391,7 +391,7 @@
 //         return true;
 //     }
 
-//     public getUri(correlationId: string, id: string,
+//     public getUri(String correlationId, id: string,
 //         callback: (err: any, uri: string) => void): void {
 //         let params = {
 //             Bucket: this._bucket,
@@ -401,7 +401,7 @@
 //         this._s3.getSignedUrl('getObject', params, callback);
 //     }
 
-//     public beginWrite(correlationId: string, item: BlobInfoV1,
+//     public beginWrite(String correlationId, item: BlobInfoV1,
 //         callback: (err: any, token: string) => void): void {
 
 //         item.group = this.encodeString(item.group);
@@ -434,7 +434,7 @@
 //         );
 //     }
 
-//     private uploadPart(correlationId: string, token: string, body: any,
+//     private uploadPart(String correlationId, token: string, body: any,
 //         callback: (err: any, token: string) => void): void {
 
 //         let tokens = (token || '').split(';');
@@ -464,7 +464,7 @@
 //         );
 //     }
 
-//     private uploadAndDeleteChunks(correlationId: string, token: string,
+//     private uploadAndDeleteChunks(String correlationId, token: string,
 //         callback: (err: any, token: string) => void): void {
 
 //         let tokens = (token || '').split(';');
@@ -489,7 +489,7 @@
 //         );
 //     }
 
-//     public writeChunk(correlationId: string, token: string, chunk: string,
+//     public writeChunk(String correlationId, token: string, chunk: string,
 //         callback: (err: any, token: string) => void): void {
 
 //         let tokens = (token || '').split(';');
@@ -511,7 +511,7 @@
 //         });
 //     }
 
-//     public endWrite(correlationId: string, token: string, chunk: string,
+//     public endWrite(String correlationId, token: string, chunk: string,
 //         callback?: (err: any, item: BlobInfoV1) => void): void {
 
 //         let tokens = (token || '').split(';');
@@ -590,7 +590,7 @@
 //         });
 //     }
 
-//     public abortWrite(correlationId: string, token: string, 
+//     public abortWrite(String correlationId, token: string, 
 //         callback?: (err: any) => void): void {
 
 //         let tokens = (token || '').split(';');
@@ -628,7 +628,7 @@
 //         );
 //     }
 
-//     public beginRead(correlationId: string, id: string,
+//     public beginRead(String correlationId, id: string,
 //         callback: (err: any, item: BlobInfoV1) => void): void {
 
 //         this.getOneById(correlationId, id, (err, item) => {
@@ -644,7 +644,7 @@
 //         });
 //     }
 
-//     public readChunk(correlationId: string, id: string, skip: number, take: number,
+//     public readChunk(String correlationId, id: string, skip: number, take: number,
 //         callback: (err: any, chunk: string) => void): void {
 
 //         let params = {
@@ -664,12 +664,12 @@
 //         );    
 //     }
 
-//     public endRead(correlationId: string, id: string,
+//     public endRead(String correlationId, id: string,
 //         callback?: (err: any) => void): void {
 //         if (callback) callback(null);
 //     }
 
-//     public deleteById(correlationId: string, id: string, callback?: (err: any) => void): void {
+//     public deleteById(String correlationId, id: string, callback?: (err: any) => void): void {
 //         let params = {
 //             Bucket: this._bucket,
 //             Key: id
@@ -678,7 +678,7 @@
 //         this._s3.deleteObject(params, callback);
 //     }
 
-//     public deleteByIds(correlationId: string, ids: string[], callback?: (err: any) => void): void {
+//     public deleteByIds(String correlationId, ids: string[], callback?: (err: any) => void): void {
 //         let params = {
 //             Bucket: this._bucket,
 //             Delete: {
@@ -693,7 +693,7 @@
 //         this._s3.deleteObjects(params, callback);
 //     }
 
-//     public clear(correlationId: string, callback?: (err: any) => void): void {
+//     public clear(String correlationId, callback?: (err: any) => void): void {
 //         let params = {
 //             Bucket: this._bucket,
 //         };

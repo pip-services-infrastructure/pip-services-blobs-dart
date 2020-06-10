@@ -33,7 +33,7 @@
 //         return this._opened;
 //     }
 
-//     public open(correlationId: string, callback?: (err: any) => void): void {
+//     public open(String correlationId, callback?: (err: any) => void): void {
 //         if (this._opened == true) {
 //             if (callback) callback(null);
 //             return;
@@ -65,7 +65,7 @@
 //         });
 //     }
 
-//     public close(correlationId: string, callback?: (err: any) => void): void {
+//     public close(String correlationId, callback?: (err: any) => void): void {
 //         // Stop cleanup process
 //         if (this._cleanupInterval) {
 //             clearInterval(this._cleanupInterval);
@@ -80,7 +80,7 @@
 //         return this._path + '/' + id + '.tmp';
 //     }
 
-//     public getChunksSize(correlationId: string, id: string,
+//     public getChunksSize(String correlationId, id: string,
 //         callback: (err: any, size: number) => void): void {
 
 //         // Read temp size
@@ -93,7 +93,7 @@
 //         });
 //     }
 
-//     public appendChunk(correlationId: string, id: string, buffer: Buffer,
+//     public appendChunk(String correlationId, id: string, buffer: Buffer,
 //         callback: (err: any, size: number) => void): void {
 
 //         this.getChunksSize(correlationId, id, (err, size) => {
@@ -120,7 +120,7 @@
 //         });
 //     }
 
-//     public readChunks(correlationId: string, id: string,
+//     public readChunks(String correlationId, id: string,
 //         callback: (err: any, buffer: Buffer) => void): void {
 //         fs.readFile(this.makeFileName(id), (err, data) => {
 //             if (err != null && err.code == 'ENOENT')
@@ -129,7 +129,7 @@
 //         });
 //     }
 
-//     public deleteChunks(correlationId: string, id: string, callback: (err: any) => void): void {
+//     public deleteChunks(String correlationId, id: string, callback: (err: any) => void): void {
 //         fs.unlink(this.makeFileName(id), (err) => {
 //             if (err != null && err.code == 'ENOENT')
 //                 err = null;
@@ -137,7 +137,7 @@
 //         });
 //     }
 
-//     public cleanup(correlationId: string, callback?: (err: any) => void): void {
+//     public cleanup(String correlationId, callback?: (err: any) => void): void {
 //         let cutoffTime = new Date().getTime() - this._writeTimeout;
 
 //         fs.readdir(this._path, (err, files) => {
@@ -155,7 +155,7 @@
 //         });
 //     }
 
-//     public clear(correlationId: string, callback?: (err: any) => void): void {
+//     public clear(String correlationId, callback?: (err: any) => void): void {
 //         fs.readdir(this._path, (err, files) => {
 //             if (err == null) {
 //                 files = _.filter(files, (file) => file.endsWith('.dat'));

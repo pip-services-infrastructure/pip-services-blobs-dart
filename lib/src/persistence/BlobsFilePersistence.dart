@@ -47,7 +47,7 @@
 //         this._persister.configure(config);
 //     }
 
-//     public open(correlationId: string, callback?: (err: any) => void): void {
+//     public open(String correlationId, callback?: (err: any) => void): void {
 //         async.series([
 //             (callback) => {
 //                 // Open temp blob storage
@@ -66,7 +66,7 @@
 //         ], callback);
 //     }
 
-//     public close(correlationId: string, callback?: (err: any) => void): void {
+//     public close(String correlationId, callback?: (err: any) => void): void {
 //         // Close temp blob storage
 //         this._storage.close(correlationId, (err) => {
 //             // Close index
@@ -84,18 +84,18 @@
 //         return false;
 //     }
 
-//     public getUri(correlationId: string, id: string,
+//     public getUri(String correlationId, id: string,
 //         callback: (err: any, uri: string) => void): void {
 //         callback(null, null);
 //     }
 
-//     public beginWrite(correlationId: string, item: BlobInfoV1,
+//     public beginWrite(String correlationId, item: BlobInfoV1,
 //         callback: (err: any, token: string) => void): void {
         
 //         super.beginWrite(correlationId, item, callback);
 //     }
 
-//     public writeChunk(correlationId: string, token: string, chunk: string,
+//     public writeChunk(String correlationId, token: string, chunk: string,
 //         callback: (err: any, token: string) => void): void {
 //         let id = token;
 //         chunk = chunk || "";
@@ -105,7 +105,7 @@
 //         });
 //     }
 
-//     public endWrite(correlationId: string, token: string, chunk: string,
+//     public endWrite(String correlationId, token: string, chunk: string,
 //         callback?: (err: any, item: BlobInfoV1) => void): void {
 //         let id = token;
 //         chunk = chunk || "";
@@ -182,7 +182,7 @@
 //         });
 //     }
     
-//     public abortWrite(correlationId: string, token: string,
+//     public abortWrite(String correlationId, token: string,
 //         callback?: (err: any) => void): void {
 //         let id = token;
 //         super.deleteById(correlationId, id, (err, item) => {
@@ -190,7 +190,7 @@
 //         });
 //     }
 
-//     public beginRead(correlationId: string, id: string,
+//     public beginRead(String correlationId, id: string,
 //         callback: (err: any, item: BlobInfoV1) => void): void {
 
 //         let filePath = this.makeFileName(id);
@@ -210,7 +210,7 @@
 //         super.getOneById(correlationId, id, callback);
 //     }
 
-//     public readChunk(correlationId: string, id: string, skip: number, take: number,
+//     public readChunk(String correlationId, id: string, skip: number, take: number,
 //         callback: (err: any, chunk: string) => void): void {
 
 //         fs.open(this.makeFileName(id), 'r', (err, fd) => {
@@ -228,12 +228,12 @@
 //         });
 //     }
 
-//     public endRead(correlationId: string, id: string,
+//     public endRead(String correlationId, id: string,
 //         callback?: (err: any) => void): void {
 //         if (callback) callback(null);
 //     }
 
-//     public deleteById(correlationId: string, id: string,
+//     public deleteById(String correlationId, id: string,
 //         callback?: (err: any, item: BlobInfoV1) => void): void {
 
 //         super.deleteById(correlationId, id, (err, item) => {
@@ -248,7 +248,7 @@
 //         });
 //     }
 
-//     public deleteByIds(correlationId: string, ids: string[], callback?: (err: any) => void): void {
+//     public deleteByIds(String correlationId, ids: string[], callback?: (err: any) => void): void {
 //         super.deleteByIds(correlationId, ids, (err) => {
 //             if (err == null) {
 //                 async.each(ids, (id, callback) => {
@@ -261,7 +261,7 @@
 //         });
 //     }
 
-//     public clear(correlationId: string, callback?: (err: any) => void): void {
+//     public clear(String correlationId, callback?: (err: any) => void): void {
 //         super.clear(correlationId, (err) => {
 //             if (err == null) {
 //                 fs.readdir(this._path, (err, files) => {

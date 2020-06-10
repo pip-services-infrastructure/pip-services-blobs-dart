@@ -1,17 +1,14 @@
-// import { IReferences } from 'package:pip_services3_commons-node';
-// import { ProcessContainer } from 'package:pip_services3_container-node';
+// import 'package:pip_services3_commons/pip_services3_commons.dart';
+// import 'package:pip_services3_container/pip_services3_container.dart';
 
-// import { BlobsServiceFactory } from '../build/BlobsServiceFactory';
-// import { DefaultRpcFactory } from 'package:pip_services3_rpc-node';
-// import { DefaultGrpcFactory } from 'package:pip_services3_grpc-node';
+// import '../build/BlobsServiceFactory.dart';
+// import 'package:pip_services3_rpc/pip_services3_rpc.dart';
+// import 'package:pip_services3_grpc/pip_services3_grpc.dart';
 
-// export class BlobsProcess extends ProcessContainer {
-
-//     public constructor() {
-//         super("blobs", "Blobs microservice");
-//         this._factories.add(new BlobsServiceFactory);
-//         this._factories.add(new DefaultRpcFactory);
-//         this._factories.add(new DefaultGrpcFactory);
-//     }
-
+// class BlobsProcess extends ProcessContainer {
+//   BlobsProcess() : super("blobs", "Blobs microservice") {
+//     factories.add(BlobsServiceFactory);
+//     factories.add(DefaultRpcFactory);
+//     factories.add(DefaultGrpcFactory);
+//   }
 // }

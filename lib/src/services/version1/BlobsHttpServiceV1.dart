@@ -1,9 +1,9 @@
-// import { Descriptor } from 'package:pip_services3_commons-node';
-// import { CommandableHttpService } from 'package:pip_services3_rpc-node';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import 'package:pip_services3_rpc/pip_services3_rpc.dart';
 
-// export class BlobsHttpServiceV1 extends CommandableHttpService {
-//     public constructor() {
-//         super('v1/blobs');
-//         this._dependencyResolver.put('controller', new Descriptor('pip-services-blobs', 'controller', 'default', '*', '1.0'));
-//     }
-// }
+class BlobsHttpServiceV1 extends CommandableHttpService {
+  BlobsHttpServiceV1() : super('v1/blobs') {
+    dependencyResolver.put('controller',
+        Descriptor('pip-services-blobs', 'controller', 'default', '*', '1.0'));
+  }
+}

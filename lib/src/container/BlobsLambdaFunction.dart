@@ -1,14 +1,14 @@
-// import { Descriptor } from 'package:pip_services3_commons-node';
-// import { CommandableLambdaFunction } from 'package:pip_services3_aws-node';
+// import 'package:pip_services3_commons/pip_services3_commons.dart';
+// //import 'package:pip_services3_aws/pip_services3_aws.dart';
 
-// import { BlobsServiceFactory } from '../build/BlobsServiceFactory';
+// import '../build/BlobsServiceFactory.dart';
 
-// export class BlobsLambdaFunction extends CommandableLambdaFunction {
-//     public constructor() {
-//         super("blobs", "Blobs function");
-//         this._dependencyResolver.put('controller', new Descriptor('pip-services-blobs', 'controller', 'default', '*', '*'));
-//         this._factories.add(new BlobsServiceFactory());
+// class BlobsLambdaFunction extends CommandableLambdaFunction {
+//     BlobsLambdaFunction():super("blobs", "Blobs function") {
+        
+//         dependencyResolver.put('controller',  Descriptor('pip-services-blobs', 'controller', 'default', '*', '*'));
+//         factories.add( BlobsServiceFactory());
 //     }
 // }
 
-// export const handler = new BlobsLambdaFunction().getHandler();
+// //export const handler =  BlobsLambdaFunction().getHandler();

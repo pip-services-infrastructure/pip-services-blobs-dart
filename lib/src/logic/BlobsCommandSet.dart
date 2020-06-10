@@ -50,7 +50,7 @@
 // 				.withOptionalProperty("filter", new FilterParamsSchema())
 // 				.withOptionalProperty("paging", new PagingParamsSchema())
 // 			,
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let filter = FilterParams.fromValue(args.get("filter"));
 //                 let paging = PagingParams.fromValue(args.get("paging"));
 //                 this._logic.getBlobsByFilter(correlationId, filter, paging, callback);
@@ -63,7 +63,7 @@
 // 			"get_blobs_by_ids",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_ids", new ArraySchema(TypeCode.String)),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 // 				let temp: string = args.getAsString("blob_ids");
 // 				let blobIds = temp.split(',');
 //                 this._logic.getBlobsByIds(correlationId, blobIds, callback);
@@ -76,7 +76,7 @@
 // 			"get_blob_by_id",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_id", TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobId = args.getAsNullableString("blob_id");
 //                 this._logic.getBlobById(correlationId, blobId, callback);
 //             }
@@ -88,7 +88,7 @@
 // 			"get_blob_uri_by_id",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_id", TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobId = args.getAsNullableString("blob_id");
 //                 this._logic.getBlobUriById(correlationId, blobId, callback);
 //             }
@@ -100,7 +100,7 @@
 // 			"begin_blob_write",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob", new BlobInfoV1Schema()),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blob = args.get("blob");
 //                 this._logic.beginBlobWrite(correlationId, blob, callback);
 //             }
@@ -113,7 +113,7 @@
 // 			new ObjectSchema(true)
 //                 .withRequiredProperty("token", TypeCode.String)
 //                 .withRequiredProperty("chunk", TypeCode.String),				
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let token = args.getAsNullableString("token");
 //                 let chunk = args.getAsNullableString("chunk");
 //                 this._logic.writeBlobChunk(correlationId, token, chunk, callback);
@@ -127,7 +127,7 @@
 // 			new ObjectSchema(true)
 //                 .withRequiredProperty("token", TypeCode.String)
 //                 .withOptionalProperty("chunk", TypeCode.String),				
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let token = args.getAsNullableString("token");
 //                 let chunk = args.getAsNullableString("chunk");
 //                 this._logic.endBlobWrite(correlationId, token, chunk, callback);
@@ -140,7 +140,7 @@
 // 			"abort_blob_write",
 // 			new ObjectSchema(true)
 //                 .withRequiredProperty("token", TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let token = args.getAsNullableString("token");
 //                 this._logic.abortBlobWrite(correlationId, token, (err) => {
 // 					callback(err, null);
@@ -154,7 +154,7 @@
 // 			"begin_blob_read",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_id", TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobId = args.getAsNullableString("blob_id");
 //                 this._logic.beginBlobRead(correlationId, blobId, callback);
 //             }
@@ -168,7 +168,7 @@
 // 				.withRequiredProperty("blob_id", TypeCode.String)
 //                 .withRequiredProperty("skip", TypeCode.Long)
 //                 .withRequiredProperty("take", TypeCode.Long),				
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobId = args.getAsNullableString("blob_id");
 //                 let skip = args.getAsNullableLong("skip");
 //                 let take = args.getAsNullableLong("take");
@@ -182,7 +182,7 @@
 // 			"end_blob_read",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_id", TypeCode.String),				
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobId = args.getAsNullableString("blob_id");
 //                 this._logic.endBlobRead(correlationId, blobId, (err) => {
 // 					callback(err, null);
@@ -196,7 +196,7 @@
 // 			"update_blob_info",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob", new BlobInfoV1Schema()),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blob = args.get("blob");
 //                 this._logic.updateBlobInfo(correlationId, blob, callback);
 //             }
@@ -208,7 +208,7 @@
 // 			"mark_blobs_completed",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_ids", new ArraySchema(TypeCode.String)),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobIds = args.get("blob_ids");
 //                 this._logic.markBlobsCompleted(correlationId, blobIds, (err) => {
 // 					callback(err, null);
@@ -222,7 +222,7 @@
 // 			"delete_blob_by_id",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_id", TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobId = args.getAsNullableString("blob_id");
 //                 this._logic.deleteBlobById(correlationId, blobId, (err) => {
 // 					callback(err, null);
@@ -236,7 +236,7 @@
 // 			"delete_blobs_by_ids",
 // 			new ObjectSchema(true)
 // 				.withRequiredProperty("blob_ids", new ArraySchema(TypeCode.String)),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let blobIds = args.get("blob_ids");
 //                 this._logic.deleteBlobsByIds(correlationId, blobIds, (err) => {
 // 					callback(err, null);
