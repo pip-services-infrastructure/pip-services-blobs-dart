@@ -1,169 +1,156 @@
-// let _ = require('lodash');
-// let async = require('async');
-// let fs = require('fs');
+import 'dart:async';
+import 'dart:io';
 
-// import { ConfigParams } from 'package:pip_services3_commons-node';
-// import { IConfigurable } from 'package:pip_services3_commons-node';
-// import { IOpenable } from 'package:pip_services3_commons-node';
-// import { ICleanable } from 'package:pip_services3_commons-node';
-// import { BadRequestException } from 'package:pip_services3_commons-node';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
 
-// export class TempBlobStorage implements IConfigurable, IOpenable, ICleanable {
-//     private _path: string = './data/temp';
-//     private _maxBlobSize: number = 100 * 1024;
-//     private _minChunkSize: number = 5 * 1024 * 1024;
-//     private _cleanupTimeout: number = 9000000;
-//     private _writeTimeout: number = 9000000;
-//     private _cleanupInterval: any = null;
-//     private _opened: boolean = false;
+class TempBlobStorage implements IConfigurable, IOpenable, ICleanable {
+  String _path = './data/temp';
+  int _maxBlobSize = 100 * 1024;
+  int _minChunkSize = 5 * 1024 * 1024;
+  int _cleanupTimeout = 9000000;
+  int _writeTimeout = 9000000;
+  Timer _cleanupInterval;
+  bool _opened = false;
 
-//     public constructor(path?: string) {
-//         this._path = path || this._path;
-//     }
+  TempBlobStorage([String path]) {
+    _path = path ?? _path;
+  }
 
-//     public configure(config: ConfigParams): void {
-//         this._path = config.getAsStringWithDefault('temp_path', this._path);
-//         this._minChunkSize = config.getAsLongWithDefault('options.min_chunk_size', this._minChunkSize);
-//         this._maxBlobSize = config.getAsLongWithDefault('options.max_blob_size', this._maxBlobSize);
-//         this._cleanupTimeout = config.getAsLongWithDefault('options.cleanup_timeout', this._cleanupTimeout);
-//         this._writeTimeout = config.getAsLongWithDefault('options.write_timeout', this._writeTimeout);
-//     }
+  @override
+  void configure(ConfigParams config) {
+    _path = config.getAsStringWithDefault('temp_path', _path);
+    _minChunkSize =
+        config.getAsLongWithDefault('options.min_chunk_size', _minChunkSize);
+    _maxBlobSize =
+        config.getAsLongWithDefault('options.max_blob_size', _maxBlobSize);
+    _cleanupTimeout =
+        config.getAsLongWithDefault('options.cleanup_timeout', _cleanupTimeout);
+    _writeTimeout =
+        config.getAsLongWithDefault('options.write_timeout', _writeTimeout);
+  }
 
-//     public isOpen(): boolean {
-//         return this._opened;
-//     }
+  @override
+  bool isOpen() {
+    return _opened;
+  }
 
-//     public open(String correlationId, callback?: (err: any) => void): void {
-//         if (this._opened == true) {
-//             if (callback) callback(null);
-//             return;
-//         }
+  Future open(String correlationId) async {
+    if (_opened == true) {
+      return;
+    }
 
-//         async.series([
-//             (callback) => {
-//                 // Create filter if it doesn't exist
-//                 if (!fs.existsSync(this._path))
-//                     fs.mkdir(this._path, callback);
-//                 else callback();
-//             },
-//             (callback) => {
-//                 // Restart cleanup process
-//                 if (this._cleanupInterval)
-//                     clearInterval(this._cleanupInterval);
+    // Create filter if it doesn't exist
+    if (!Directory(_path).existsSync()) {
+      Directory(_path).createSync();
+    }
 
-//                 this._cleanupInterval = setInterval(() => {
-//                     this.cleanup(null);
-//                 }, this._cleanupTimeout);
+    // Restart cleanup process
+    if (_cleanupInterval != null) {
+      _cleanupInterval.cancel();
+    }
 
-//                 callback();
-//             }
-//         ], (err) => {
-//             if (err == null)
-//                 this._opened = true;
+    _cleanupInterval = Timer.periodic(
+      Duration(milliseconds: _cleanupTimeout),
+      (tm) async {
+        await cleanup('');
+      },
+    );
 
-//             callback(err);
-//         });
-//     }
+    _opened = true;
+  }
 
-//     public close(String correlationId, callback?: (err: any) => void): void {
-//         // Stop cleanup process
-//         if (this._cleanupInterval) {
-//             clearInterval(this._cleanupInterval);
-//             this._cleanupInterval = null;
-//         }
+  @override
+  Future close(String correlationId) async {
+    // Stop cleanup process
+    if (_cleanupInterval != null) {
+      _cleanupInterval.cancel();
+      _cleanupInterval = null;
+    }
 
-//         this._opened = false;
-//         if (callback) callback(null);
-//     }
+    _opened = false;
+  }
 
-//     public makeFileName(id: string): string {
-//         return this._path + '/' + id + '.tmp';
-//     }
+  String makeFileName(String id) {
+    return _path + '/' + id + '.tmp';
+  }
 
-//     public getChunksSize(String correlationId, id: string,
-//         callback: (err: any, size: number) => void): void {
+  Future<int> getChunksSize(String correlationId, String id) {
+    Read temp size
+    fs.stat(this.makeFileName(id), (err, stats) => {
+        let size = stats != null ? stats.size : 0;
+        if (err != null && err.code == 'ENOENT')
+            err = null;
 
-//         // Read temp size
-//         fs.stat(this.makeFileName(id), (err, stats) => {
-//             let size = stats != null ? stats.size : 0;
-//             if (err != null && err.code == 'ENOENT')
-//                 err = null;
+        callback(err, size);
+    });
+  }
 
-//             callback(err, size);
-//         });
-//     }
+  // public appendChunk(String correlationId, id: string, buffer: Buffer,
+  //     callback: (err: any, size: number) => void): void {
 
-//     public appendChunk(String correlationId, id: string, buffer: Buffer,
-//         callback: (err: any, size: number) => void): void {
+  //     this.getChunksSize(correlationId, id, (err, size) => {
+  //         // Enforce max blob size
+  //         size = size + buffer.length;
+  //         if (size > this._maxBlobSize) {
+  //             let err = new BadRequestException(
+  //                 correlationId,
+  //                 'BLOB_TOO_LARGE',
+  //                 'Blob ' + id + ' exceeds allowed maximum size of ' + this._maxBlobSize
+  //             ).withDetails('blob_id', id)
+  //             .withDetails('size', size)
+  //             .withDetails('max_size', this._maxBlobSize);
+  //         }
 
-//         this.getChunksSize(correlationId, id, (err, size) => {
-//             // Enforce max blob size
-//             size = size + buffer.length;
-//             if (size > this._maxBlobSize) {
-//                 let err = new BadRequestException(
-//                     correlationId,
-//                     'BLOB_TOO_LARGE',
-//                     'Blob ' + id + ' exceeds allowed maximum size of ' + this._maxBlobSize
-//                 ).withDetails('blob_id', id)
-//                 .withDetails('size', size)
-//                 .withDetails('max_size', this._maxBlobSize);
-//             }
+  //         if (err != null) {
+  //             callback(err, null);
+  //             return;
+  //         }
 
-//             if (err != null) {
-//                 callback(err, null);
-//                 return;
-//             }
+  //         fs.appendFile(this.makeFileName(id), buffer, (err) => {
+  //             callback(err, size);
+  //         });
+  //     });
+  // }
 
-//             fs.appendFile(this.makeFileName(id), buffer, (err) => {
-//                 callback(err, size);
-//             });
-//         });
-//     }
+  // public readChunks(String correlationId, id: string,
+  //     callback: (err: any, buffer: Buffer) => void): void {
+  //     fs.readFile(this.makeFileName(id), (err, data) => {
+  //         if (err != null && err.code == 'ENOENT')
+  //             err = null;
+  //         callback(err, data);
+  //     });
+  // }
 
-//     public readChunks(String correlationId, id: string,
-//         callback: (err: any, buffer: Buffer) => void): void {
-//         fs.readFile(this.makeFileName(id), (err, data) => {
-//             if (err != null && err.code == 'ENOENT')
-//                 err = null;
-//             callback(err, data);
-//         });
-//     }
+  // public deleteChunks(String correlationId, id: string, callback: (err: any) => void): void {
+  //     fs.unlink(this.makeFileName(id), (err) => {
+  //         if (err != null && err.code == 'ENOENT')
+  //             err = null;
+  //         callback(err);
+  //     });
+  // }
 
-//     public deleteChunks(String correlationId, id: string, callback: (err: any) => void): void {
-//         fs.unlink(this.makeFileName(id), (err) => {
-//             if (err != null && err.code == 'ENOENT')
-//                 err = null;
-//             callback(err);
-//         });
-//     }
+  Future cleanup(String correlationId) async {
+    var cutoffTime =
+        DateTime.now().toUtc().millisecondsSinceEpoch - _writeTimeout;
 
-//     public cleanup(String correlationId, callback?: (err: any) => void): void {
-//         let cutoffTime = new Date().getTime() - this._writeTimeout;
+    var files = await Directory(_path).listSync();
 
-//         fs.readdir(this._path, (err, files) => {
-//             if (err == null) {
-//                 files = _.filter(files, (file) => file.endsWith('.tmp'));
-//                 async.each(files, (file, callback) => {
-//                     let path = this._path + '/' + file;
-//                     fs.stat(path, (err, stats) => {
-//                         if (err == null && stats != null && stats.birthtime.getTime() < cutoffTime)
-//                             fs.unlink(path, callback);
-//                         else callback(err);
-//                     });
-//                 }, callback);
-//             } else callback(err);
-//         });
-//     }
+    files = files.where((file) => file.path.endsWith('.tmp'));
+    for (var file in files) {
+      var stat = await file.stat();
+      if (stat.modified.millisecondsSinceEpoch < cutoffTime) {
+        await file.delete();
+      }
+    }
+  }
 
-//     public clear(String correlationId, callback?: (err: any) => void): void {
-//         fs.readdir(this._path, (err, files) => {
-//             if (err == null) {
-//                 files = _.filter(files, (file) => file.endsWith('.dat'));
-//                 async.each(files, (file, callback) => {
-//                     fs.unlink(this._path + '/' + file, callback);
-//                 }, callback);
-//             } else callback(err);
-//         });
-//     }
+  @override
+  Future clear(String correlationId) async {
+    var files = Directory(_path).listSync();
 
-// }
+    files = files.where((file) => file.path.endsWith('.dat'));
+    for (var file in files) {
+      file.deleteSync(); //(_path + '/' + file);
+    }
+  }
+}

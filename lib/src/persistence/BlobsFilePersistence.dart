@@ -1,278 +1,259 @@
-// let _ = require('lodash');
-// let async = require('async');
-// let fs = require('fs');
+import 'dart:async';
+import 'dart:io';
+import 'dart:convert';
 
-// import { ConfigParams } from 'package:pip_services3_commons-node';
-// import { FilterParams } from 'package:pip_services3_commons-node';
-// import { PagingParams } from 'package:pip_services3_commons-node';
-// import { DataPage } from 'package:pip_services3_commons-node';
-// import { JsonFilePersister } from 'package:pip_services3_data-node';
-// import { NotFoundException } from 'package:pip_services3_commons-node';
-// import { BadRequestException } from 'package:pip_services3_commons-node';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import 'package:pip_services3_data/pip_services3_data.dart';
+import './BlobsMemoryPersistence.dart';
+import '../data/version1/BlobInfoV1.dart';
+import './TempBlobStorage.dart';
 
-// import { BlobsMemoryPersistence } from './BlobsMemoryPersistence';
-// import { BlobInfoV1 } from '../data/version1/BlobInfoV1';
-// import { TempBlobStorage } from './TempBlobStorage';
+class BlobsFilePersistence extends BlobsMemoryPersistence {
+  JsonFilePersister<BlobInfoV1> persister;
+  var path = './data/blobs';
+  var index = './data/blobs/index.json';
+  @override
+  int maxBlobSize = 100 * 1024;
+  TempBlobStorage storage;
 
-// export class BlobsFilePersistence extends BlobsMemoryPersistence {
-// 	protected _persister: JsonFilePersister<BlobInfoV1>;
-//     protected _path: string = './data/blobs';
-//     protected _index: string = './data/blobs/index.json';
-//     protected _maxBlobSize: number = 100 * 1024;
-//     protected _storage: TempBlobStorage;
+  BlobsFilePersistence([String path, String index]) : super() {
+    this.path = path ?? this.path;
+    this.index = index ?? this.path + '/index.json';
 
-//     public constructor(path?: string, index?: string) {
-//         super();
+    storage = TempBlobStorage(this.path);
+    persister = JsonFilePersister<BlobInfoV1>(this.index);
+    loader = persister;
+    saver = persister;
+  }
 
-//         this._path = path || this._path;
-//         this._index = index || this._path + '/index.json';
+  @override
+  void configure(ConfigParams config) {
+    config = ConfigParams(config);
+    storage.configure(config);
 
-//         this._storage = new TempBlobStorage(this._path);
-//         this._persister = new JsonFilePersister<BlobInfoV1>(this._index);
-//         this._loader = this._persister;
-//         this._saver = this._persister;
-//     }
+    path = config.getAsStringWithDefault('path', path);
+    index = config.getAsStringWithDefault('index', path + '/index.json');
+    maxBlobSize =
+        config.getAsLongWithDefault('options.max_blob_size', maxBlobSize);
 
-//     public configure(config: ConfigParams): void {
-//         config = new ConfigParams(config);
-//         this._storage.configure(config);
+    // Override and set configuration
+    config.setAsObject('path', index);
+    super.configure(config);
+    persister.configure(config);
+  }
 
-//         this._path = config.getAsStringWithDefault('path', this._path);
-//         this._index = config.getAsStringWithDefault('index', this._path + '/index.json');
-//         this._maxBlobSize = config.getAsLongWithDefault('options.max_blob_size', this._maxBlobSize);
+  @override
+  Future open(String correlationId) async {
+    // Open temp blob storage
+    await storage.open(correlationId);
 
-//         // Override and set configuration
-//         config.setAsObject('path', this._index);
-//         super.configure(config);
-//         this._persister.configure(config);
-//     }
+    // Create folder if it doesn't exist
+    var pathDir = Directory(path);
+    if (!pathDir.existsSync()) {
+      pathDir.createSync(recursive: true);
+    }
 
-//     public open(String correlationId, callback?: (err: any) => void): void {
-//         async.series([
-//             (callback) => {
-//                 // Open temp blob storage
-//                 this._storage.open(correlationId, callback);
-//             },
-//             (callback) => {
-//                 // Create folder if it doesn't exist
-//                 if (!fs.existsSync(this._path))
-//                     fs.mkdir(this._path, callback);
-//                 else callback();
-//             },
-//             (callback) => {
-//                 // Close index
-//                 super.open(correlationId, callback);
-//             }
-//         ], callback);
-//     }
+    // Close index
+    await open(correlationId);
+  }
 
-//     public close(String correlationId, callback?: (err: any) => void): void {
-//         // Close temp blob storage
-//         this._storage.close(correlationId, (err) => {
-//             // Close index
-//             if (err == null)
-//                 super.close(correlationId, callback);
-//             else if (callback) callback(err);
-//         });
-//     }
+  @override
+  Future close(String correlationId) async {
+    // Close temp blob storage
+    await storage.close(correlationId);
+    // Close index
+    await super.close(correlationId);
+  }
 
-//     protected makeFileName(id: string): string {
-//         return this._path + '/' + id + '.dat';
-//     }
+  String makeFileName(String id) {
+    return path + '/' + id + '.dat';
+  }
 
-//     public isUriSupported(): boolean {
-//         return false;
-//     }
+  @override
+  bool isUriSupported() {
+    return false;
+  }
 
-//     public getUri(String correlationId, id: string,
-//         callback: (err: any, uri: string) => void): void {
-//         callback(null, null);
-//     }
+  @override
+  Future<String> getUri(String correlationId, String id) async {
+    return null;
+  }
 
-//     public beginWrite(String correlationId, item: BlobInfoV1,
-//         callback: (err: any, token: string) => void): void {
-        
-//         super.beginWrite(correlationId, item, callback);
-//     }
+  @override
+  Future<String> beginWrite(String correlationId, BlobInfoV1 item) {
+    return super.beginWrite(correlationId, item);
+  }
 
-//     public writeChunk(String correlationId, token: string, chunk: string,
-//         callback: (err: any, token: string) => void): void {
-//         let id = token;
-//         chunk = chunk || "";
-//         let buffer = Buffer.from(chunk, 'base64');
-//         this._storage.appendChunk(correlationId, id, buffer, (err, chunks) => {
-//             callback(err, token);
-//         });
-//     }
+  @override
+  Future<String> writeChunk(
+      String correlationId, String token, String chunk) async {
+    var id = token;
+    chunk = chunk ?? '';
+    var buffer = Base64Decoder().convert(chunk); //Buffer.from(chunk, 'base64');
+    await storage.appendChunk(correlationId, id, buffer);
+    return token;
+  }
 
-//     public endWrite(String correlationId, token: string, chunk: string,
-//         callback?: (err: any, item: BlobInfoV1) => void): void {
-//         let id = token;
-//         chunk = chunk || "";
-//         let buffer = Buffer.from(chunk, 'base64');
-//         let size = buffer.length;
-//         let append = false;
-//         let item: BlobInfoV1;
+  // public endWrite(String correlationId, token: string, chunk: string,
+  //     callback?: (err: any, item: BlobInfoV1) => void): void {
+  //     let id = token;
+  //     chunk = chunk || "";
+  //     let buffer = Buffer.from(chunk, 'base64');
+  //     let size = buffer.length;
+  //     let append = false;
+  //     let item: BlobInfoV1;
 
-//         async.series([
-//             // Get blob info
-//             (callback) => {
-//                 super.getOneById(correlationId, id, (err, data) => {
-//                     if (err == null && data == null) {
-//                         err = new NotFoundException(
-//                             correlationId, 
-//                             'BLOB_NOT_FOUND', 
-//                             'Blob ' + id + ' was not found'
-//                         ).withDetails('blob_id', id);
-//                     }
-//                     item = data;
-//                     callback(err);
-//                 });
-//             },
-//             // Read current size and decide to append or to write from scratch
-//             (callback) => {
-//                 this._storage.getChunksSize(correlationId, id, (err, writtenSize) => {
-//                     append = writtenSize > 0;
-//                     size += writtenSize;
-//                     callback();
-//                 });
-//             },
-//             // Append existing file and rename
-//             (callback) => {
-//                 if (!append) {
-//                     callback();
-//                     return;
-//                 }
+  //     async.series([
+  //         // Get blob info
+  //         (callback) => {
+  //             super.getOneById(correlationId, id, (err, data) => {
+  //                 if (err == null && data == null) {
+  //                     err = new NotFoundException(
+  //                         correlationId,
+  //                         'BLOB_NOT_FOUND',
+  //                         'Blob ' + id + ' was not found'
+  //                     ).withDetails('blob_id', id);
+  //                 }
+  //                 item = data;
+  //                 callback(err);
+  //             });
+  //         },
+  //         // Read current size and decide to append or to write from scratch
+  //         (callback) => {
+  //             this.storage.getChunksSize(correlationId, id, (err, writtenSize) => {
+  //                 append = writtenSize > 0;
+  //                 size += writtenSize;
+  //                 callback();
+  //             });
+  //         },
+  //         // Append existing file and rename
+  //         (callback) => {
+  //             if (!append) {
+  //                 callback();
+  //                 return;
+  //             }
 
-//                 // If some chunks already stored in temp file - append then upload the entire file
-//                 this._storage.appendChunk(correlationId, id, buffer, (err, chunks) => {
-//                     if (err != null) {
-//                         if (callback) callback(err);
-//                         return;
-//                     }
+  //             // If some chunks already stored in temp file - append then upload the entire file
+  //             this.storage.appendChunk(correlationId, id, buffer, (err, chunks) => {
+  //                 if (err != null) {
+  //                     if (callback) callback(err);
+  //                     return;
+  //                 }
 
-//                     let oldPath = this._storage.makeFileName(id);
-//                     let newPath = this.makeFileName(id);
-//                     fs.rename(oldPath, newPath, (err) => {
-//                         callback(err);
-//                     });
-//                 });
-//             },
-//             // Write blob from scratch
-//             (callback) => {
-//                 if (append) {
-//                     callback();
-//                     return;
-//                 }
+  //                 let oldPath = this.storage.makeFileName(id);
+  //                 let newPath = this.makeFileName(id);
+  //                 fs.rename(oldPath, newPath, (err) => {
+  //                     callback(err);
+  //                 });
+  //             });
+  //         },
+  //         // Write blob from scratch
+  //         (callback) => {
+  //             if (append) {
+  //                 callback();
+  //                 return;
+  //             }
 
-//                 // If it's the first chunk then upload it without writing to temp file
-//                 fs.writeFile(this.makeFileName(id), buffer, callback);
-//             },
-//             // Update blob info with size and create time
-//             (callback) => {
-//                 let buffer = this._content[id];
-//                 item.create_time = new Date();
-//                 item.size = size;
+  //             // If it's the first chunk then upload it without writing to temp file
+  //             fs.writeFile(this.makeFileName(id), buffer, callback);
+  //         },
+  //         // Update blob info with size and create time
+  //         (callback) => {
+  //             let buffer = this._content[id];
+  //             item.create_time = new Date();
+  //             item.size = size;
 
-//                 super.update(correlationId, item, callback);
-//             }
-//         ], (err) => {
-//             if (err) callback(err, null);
-//             else callback(null, item);
-//         });
-//     }
-    
-//     public abortWrite(String correlationId, token: string,
-//         callback?: (err: any) => void): void {
-//         let id = token;
-//         super.deleteById(correlationId, id, (err, item) => {
-//             this._storage.deleteChunks(correlationId, id, callback);
-//         });
-//     }
+  //             super.update(correlationId, item, callback);
+  //         }
+  //     ], (err) => {
+  //         if (err) callback(err, null);
+  //         else callback(null, item);
+  //     });
+  // }
 
-//     public beginRead(String correlationId, id: string,
-//         callback: (err: any, item: BlobInfoV1) => void): void {
+  @override
+  Future abortWrite(String correlationId, String token) async {
+    var id = token;
+    await super.deleteById(correlationId, id);
+    await storage.deleteChunks(correlationId, id);
+  }
 
-//         let filePath = this.makeFileName(id);
+  @override
+  Future<BlobInfoV1> beginRead(String correlationId, String id) {
+    var filePath = makeFileName(id);
 
-//         if (!fs.existsSync(filePath)) {
-//             let err = new NotFoundException(
-//                 correlationId, 
-//                 'BLOB_NOT_FOUND', 
-//                 'Blob ' + id + ' was not found'
-//             ).withDetails('blob_id', id)
-//             .withDetails('path', filePath);
-            
-//             callback(err, null);
-//             return;
-//         }
+    if (!Directory(filePath).existsSync()) {
+      throw NotFoundException(
+              correlationId, 'BLOB_NOT_FOUND', 'Blob ' + id + ' was not found')
+          .withDetails('blob_id', id)
+          .withDetails('path', filePath);
+    }
 
-//         super.getOneById(correlationId, id, callback);
-//     }
+    return super.getOneById(correlationId, id);
+  }
 
-//     public readChunk(String correlationId, id: string, skip: number, take: number,
-//         callback: (err: any, chunk: string) => void): void {
+  Future<String> readChunk(String correlationId, String id, int skip, int take) async {
 
-//         fs.open(this.makeFileName(id), 'r', (err, fd) => {
-//             let buffer = new Buffer(take);
-//             if (err == null) {
-//                 fs.read(fd, buffer, 0, take, skip, (err) => {
-//                     if (err == null) {
-//                         fs.close(fd, (err) => {
-//                             let result = buffer.toString('base64');
-//                             callback(err, result);
-//                         });
-//                     } else callback(err, null);
-//                 });
-//             } else callback(err, null);
-//         });
-//     }
+      fs.open(makeFileName(id), 'r', (err, fd) => {
+          ValidationResultType buffer = Buffer(take);
+          if (err == null) {
+              fs.read(fd, buffer, 0, take, skip, (err) => {
+                  if (err == null) {
+                      fs.close(fd, (err) => {
+                          var result = buffer.toString('base64');
+                          callback(err, result);
+                      });
+                  } else callback(err, null);
+              });
+          } else callback(err, null);
+      });
+  }
 
-//     public endRead(String correlationId, id: string,
-//         callback?: (err: any) => void): void {
-//         if (callback) callback(null);
-//     }
+  @override
+  Future endRead(String correlationId, String id) async{
+     return null;
+  }
 
-//     public deleteById(String correlationId, id: string,
-//         callback?: (err: any, item: BlobInfoV1) => void): void {
+  // public deleteById(String correlationId, id: string,
+  //     callback?: (err: any, item: BlobInfoV1) => void): void {
 
-//         super.deleteById(correlationId, id, (err, item) => {
-//             fs.unlink(this.makeFileName(id), (err) => {
-//                 if (err == null) { 
-//                     super.deleteById(correlationId, id, (err) => {
-//                         if (err && err.code == 'ENOENT') err = null;
-//                         if (callback) callback(err, item);
-//                     });
-//                 } else if (callback) callback(err, null);
-//             });
-//         });
-//     }
+  //     super.deleteById(correlationId, id, (err, item) => {
+  //         fs.unlink(this.makeFileName(id), (err) => {
+  //             if (err == null) {
+  //                 super.deleteById(correlationId, id, (err) => {
+  //                     if (err && err.code == 'ENOENT') err = null;
+  //                     if (callback) callback(err, item);
+  //                 });
+  //             } else if (callback) callback(err, null);
+  //         });
+  //     });
+  // }
 
-//     public deleteByIds(String correlationId, ids: string[], callback?: (err: any) => void): void {
-//         super.deleteByIds(correlationId, ids, (err) => {
-//             if (err == null) {
-//                 async.each(ids, (id, callback) => {
-//                     fs.unlink(this.makeFileName(id), (err) => {
-//                         if (err && err.code == 'ENOENT') err = null;
-//                         if (callback) callback(err);
-//                     });
-//                 }, callback);
-//             } else if (callback) callback(err);
-//         });
-//     }
+  // public deleteByIds(String correlationId, ids: string[], callback?: (err: any) => void): void {
+  //     super.deleteByIds(correlationId, ids, (err) => {
+  //         if (err == null) {
+  //             async.each(ids, (id, callback) => {
+  //                 fs.unlink(this.makeFileName(id), (err) => {
+  //                     if (err && err.code == 'ENOENT') err = null;
+  //                     if (callback) callback(err);
+  //                 });
+  //             }, callback);
+  //         } else if (callback) callback(err);
+  //     });
+  // }
 
-//     public clear(String correlationId, callback?: (err: any) => void): void {
-//         super.clear(correlationId, (err) => {
-//             if (err == null) {
-//                 fs.readdir(this._path, (err, files) => {
-//                     if (err == null) {
-//                         files = _.filter(files, (file) => file.endsWith('.dat'));
-//                         async.each(files, (file, callback) => {
-//                             fs.unlink(this._path + '/' + file, callback);
-//                         }, callback);
-//                     } else callback(err);
-//                 });
-//             } else if (callback) callback(err);
-//         });
-//     }
-// }
+  // public clear(String correlationId, callback?: (err: any) => void): void {
+  //     super.clear(correlationId, (err) => {
+  //         if (err == null) {
+  //             fs.readdir(this.path, (err, files) => {
+  //                 if (err == null) {
+  //                     files = _.filter(files, (file) => file.endsWith('.dat'));
+  //                     async.each(files, (file, callback) => {
+  //                         fs.unlink(this.path + '/' + file, callback);
+  //                     }, callback);
+  //                 } else callback(err);
+  //             });
+  //         } else if (callback) callback(err);
+  //     });
+  // }
+}
